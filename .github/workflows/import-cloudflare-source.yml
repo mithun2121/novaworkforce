@@ -1,0 +1,53 @@
+name: Import Cloudflare website source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-cloudflare-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Extract the uploaded Cloudflare project
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/nova-workforce-cloudflare-source.zip"
+          extract_dir="$RUNNER_TEMP/nova-workforce-source"
+          curl --fail --location --silent --show-error \
+            "https://raw.githubusercontent.com/mithun2121/novaworkforce/main/nova-workforce-cloudflare-source.zip" \
+            --output "$archive"
+          unzip -t "$archive"
+          mkdir -p "$extract_dir"
+          unzip -q "$archive" -d "$extract_dir"
+          test -f "$extract_dir/package.json"
+          test -f "$extract_dir/build.mjs"
+          test -f "$extract_dir/functions/api/run-mission.js"
+          test -f "$extract_dir/site/index.html"
+          cp -a "$extract_dir/." "$GITHUB_WORKSPACE/"
+
+      - name: Validate project and commit files
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check build.mjs
+          node --check functions/api/run-mission.js
+          npm run build
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes needed."
+          else
+            git commit -m "Add NOVA Workforce Cloudflare Pages source"
+            git push
+          fi
