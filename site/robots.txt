@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://novaworkforce.online/sitemap.xml

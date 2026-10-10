@@ -1,0 +1,15 @@
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.dirname(fileURLToPath(import.meta.url));
+const site = path.join(root, 'site');
+const dist = path.join(root, 'dist');
+await rm(dist, { recursive: true, force: true });
+await mkdir(dist, { recursive: true });
+await cp(site, dist, { recursive: true });
+const siteKey = process.env.TURNSTILE_SITE_KEY || '__TURNSTILE_SITE_KEY__';
+const consolePath = path.join(dist, 'console', 'index.html');
+const html = await readFile(consolePath, 'utf8');
+await writeFile(consolePath, html.replaceAll('__TURNSTILE_SITE_KEY__', siteKey), 'utf8');
+console.log('NOVA static site built into dist/.');
+console.log(siteKey.includes('__TURNSTILE_SITE_KEY__') ? 'Turnstile site key not set: live mission execution will stay disabled.' : 'Turnstile site key embedded as a public site key.');

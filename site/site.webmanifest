@@ -1,0 +1,15 @@
+{
+  "name": "NOVA Workforce",
+  "short_name": "NOVA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f8f5",
+  "theme_color": "#245544",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
